@@ -54,13 +54,14 @@ def get_search_links():
     url = "https://www.goodreads.com/search?q=fantasy&qid=NwUsLiA2Nc"
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'html.parser')
-
-    for link in soup:
-        while i<= 10:
-            url_list.append(link)
-            i = i + 1
-    return url_list
-    pass
+    anchor = soup.find_all('a', class_="bookTitle")
+    for i in anchor:
+        link = i['href']
+        if link.startswith("/book/show/"):
+            x = "https://www.goodreads.com" + str(link)
+            url_list.append(x)
+    return url_list[:10]
+#    pass
 
 
 def get_book_summary(book_url):
@@ -76,6 +77,7 @@ def get_book_summary(book_url):
     You can easily capture CSS selectors with your browser's inspector window.
     Make sure to strip() any newlines from the book title and number of pages.
     """
+    url_list = []
     r = requests.get(book_url)
     soup = BeautifulSoup(r.text, 'html.parser')
     anchor = soup.find_all('h1', class_= 'gr-h1 gr-h1--serif')
@@ -141,6 +143,7 @@ class TestCases(unittest.TestCase):
 
     def test_get_titles_from_search_results(self):
         # call get_titles_from_search_results() on search_results.htm and save to a local variable
+        
         titles = get_titles_from_search_results("search_results.htm")
 
         # check that the number of titles extracted is correct (20 titles)
@@ -148,10 +151,10 @@ class TestCases(unittest.TestCase):
 
         # check that the variable you saved after calling the function is a list
 
-        self.assertIsInstance(titles, 'list', msg=None)
+        self.assertIsInstance(titles, list)
         # check that each item in the list is a tuple
         for x in titles:
-            self.assertIsInstance(x, 'tuple', msg=None)
+            self.assertIsInstance(x, tuple)
         # check that the first book and author tuple is correct (open search_results.htm and find it)
         self.assertEqual(x[0], )
         # check that the last title is correct (open search_results.htm and find it)
@@ -159,18 +162,19 @@ class TestCases(unittest.TestCase):
 
     def test_get_search_links(self):
         # check that TestCases.search_urls is a list
-        self.assertIsInstance(self.search_urls(), 'list', msg=None)
+        search_urls = get_search_links()
+        self.assertIsInstance(search_urls, list)
 
         # check that the length of TestCases.search_urls is correct (10 URLs)
-        self.assertEqual(len(self.search_urls()), 10)
+        self.assertEqual(len(search_urls), 10)
 
 
         # check that each URL in the TestCases.search_urls is a string
-        for x in self.search_urls():
-            self.assertIsInstance(x, 'str', msg=None)
+        for x in search_urls:
+            self.assertIsInstance(x, str)
 
         # check that each URL contains the correct url for Goodreads.com followed by /book/show/
-        for x in self.search_urls():
+        for x in search_urls:
             self.assertTrue("/book/show/" in x)
 
 
