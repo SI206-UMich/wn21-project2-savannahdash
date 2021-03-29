@@ -74,15 +74,28 @@ def get_book_summary(book_url):
     You can easily capture CSS selectors with your browser's inspector window.
     Make sure to strip() any newlines from the book title and number of pages.
     """
-    url_list = []
+    bookInfo = []
     r = requests.get(book_url)
-    soup = BeautifulSoup(r.text, 'html.parser')
-    anchor = soup.find_all('h1', class_= 'gr-h1 gr-h1--serif')
-    print(anchor)
-    anchor2 = anchor.find_all('div', class_ = 'authorName_container')
-    print(anchor2)
-    anchor3 = anchor2.find_all('span', class_= 'numberOfPages')
-    print(anchor3)
+    soup = BeautifulSoup(r.text, 'lxml')
+    try:
+        titles = soup.find('h1', class_='gr-h1 gr-h1--serif').text.strip()
+        authors = soup.find('a', class_= 'authorName').text.strip()
+        numPages = soup.find('span', itemprop = "numberofPages").text.strip()
+    except: 
+        titles = ""
+        authors = ""
+        numPages = ""
+#    for item in titles:
+#        bookTitles.append(item)
+#    for i in authors:
+#        authorList.append(i)
+#    pageCount.append(numPages)
+#    for z in bookTitles:
+#        tup = (bookTitles[z], authorList[z], pageCount[z])
+#        bookInfo.append(tup)
+    return(titles, authors, numPages)
+
+
 
     #pass
 
@@ -237,7 +250,7 @@ class TestCases(unittest.TestCase):
             self.assertIsInstance(x[0][:1], 'str', msg=None)
 
             # check that the third element in the tuple, i.e. pages is an int
-            self.assertIsInstance(x[0][2], 'int', msg=None)
+            self.assertEqual(type(x[2], int))
 
             # check that the first book in the search has 337 pages
             self.assertEqual(x[0][2], 337)
