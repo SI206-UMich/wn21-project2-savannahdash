@@ -15,24 +15,27 @@ def get_titles_from_search_results(filename):
     [('Book title 1', 'Author 1'), ('Book title 2', 'Author 2')...]
     """
     f = open(filename, 'r')
-    fileData = f.read()
+    fileD = f.read()
     f.close()
-    soup = BeautifulSoup(fileData, 'lxml')
+    #
+    soup = BeautifulSoup(fileD, 'lxml')
     bookTitles = soup.find_all('a', class_='bookTitle')
-    bookInfo = []
-    for tag in bookTitles:
-        bookInfo.append(tag.text.strip())
-    authorsList = []
-    authorTags = soup.find_all('div', class_='authorName__container')
-    for item in authorTags:
-        authorsList.append(item.text.strip())
-    information = []
-    for i in range(len(bookTitles)):
-        tup = bookInfo[i], authorsList[i]
-        information.append(tup)
-    return information
- 
 
+    book_Info = []
+    for tag in bookTitles:
+        book_Info.append(tag.text.strip())
+
+    authors_Lst = []
+    author_Tags = soup.find_all('div', class_='authorName__container')
+    for item in author_Tags:
+        authors_Lst.append(item.text.strip())
+
+    info = []
+    for x in range(len(bookTitles)):
+        tup = book_Info[x], authors_Lst[x]
+        info.append(tup)
+    return info
+ 
 
 def get_search_links():
     """
@@ -47,17 +50,20 @@ def get_search_links():
     “https://www.goodreads.com/book/show/kdkd".
 
     """
-    url_list = []
+    urls = []
     url = "https://www.goodreads.com/search?q=fantasy&qid=NwUsLiA2Nc"
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'html.parser')
     anchor = soup.find_all('a', class_="bookTitle")
+
     for i in anchor:
         link = i['href']
         if link.startswith("/book/show/"):
-            x = "https://www.goodreads.com" + str(link)
-            url_list.append(x)
-    return url_list[:10]
+            y = "https://www.goodreads.com" + str(link)
+            urls.append(y)
+
+
+    return urls[:10]
 #    pass
 
 
@@ -79,15 +85,12 @@ def get_book_summary(book_url):
 
     anchor = soup.find('h1', class_='gr-h1 gr-h1--serif')
     title = anchor.text.strip()
-
-    anchor2 = soup.find('a', class_='authorName')
-    author = anchor2.text.strip()
-    
-    anchor3 = soup.find('span', itemprop='numberOfPages')
-    page_count = anchor3.text.strip(' pages')
-
-    tup = (title, author, int(page_count))
-    return tup 
+    a2 = soup.find('a', class_='authorName')
+    author = a2.text.strip()
+    a3 = soup.find('span', itemprop='numberOfPages')
+    pagecount = a3.text.strip(' pages')
+    t = (title, author, int(pagecount))
+    return t 
     #pass
 
 
@@ -102,37 +105,39 @@ def summarize_best_books(filepath):
     ("Fiction", "The Testaments (The Handmaid's Tale, #2)", "https://www.goodreads.com/choiceawards/best-fiction-books-2020") 
     to your list of tuples.
     """
-    catList = []
-    bbList = []
+    categoryList = []
+    bookList = []
     urlList = []
-    tups = []
+    t = []
 
     file1 = open(filepath, 'r')
-    data = file1.read()
+    filedata = file1.read()
     file1.close()
 
-    soup = BeautifulSoup(data, 'html.parser')
-    cat = soup.find_all("h4")
-    for category in cat:
-        catList.append(category.text.strip())
+    soup = BeautifulSoup(filedata, 'html.parser')
+    c = soup.find_all("h4")
+    for category in c:
+        categoryList.append(category.text.strip())
 
     bb = soup.find_all('div', class_= 'category__winnerImageContainer')
     for book in bb:
         for x in book.find_all('img', alt=True):
             title = x['alt']
-            bbList.append(title)
+            bookList.append(title)
     
     urls = soup.find_all("div", class_ = "category clearFix")
-    for url in urls:
-        urlList.append(url.find('a')['href'])
-    #print(catList)
-    #print(bbList)  
+    for u in urls:
+        urlList.append(u.find('a')['href'])
+
+
+    #print(categoryList)
+    #print(bookList)  
     #print(urlList)
 
-    for i in range(len(urlList)):
-        tup = (catList[i], bbList[i], urlList[i])
-        tups.append(tup)
-    return tups
+    for x in range(len(urlList)):
+        tup = (categoryList[x], bookList[x], urlList[x])
+        t.append(tup)
+    return t
    
     #pass
 
@@ -160,9 +165,8 @@ def write_csv(data, filename):
     with open(filename, 'w', newline='', encoding='utf-8') as f:
         f = csv.writer(f, delimiter = ",")
         f.writerow(['Book title', 'Author Name'])
-        for line in data:
-            f.writerow(line)
-
+        for l in data:
+            f.writerow(l)
 
 
     #pass
@@ -233,11 +237,11 @@ class TestCases(unittest.TestCase):
         self.assertEqual(len(summaries), 10)
 
             # check that each item in the list is a tuple
-        for x in summaries:
-            self.assertIsInstance(x,tuple)
+        for i in summaries:
+            self.assertIsInstance(i,tuple)
 
             # check that each tuple has 3 elements
-            self.assertEqual(len(x), 3)
+            self.assertEqual(len(i), 3)
             # check that the first two elements in the tuple are string
         self.assertIsInstance(summaries[0][0], str)
         self.assertIsInstance(summaries[0][1], str)
